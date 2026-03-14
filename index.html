@@ -1203,6 +1203,11 @@
             .site-footer p {
                 font-size: 1.5rem;
             }
+
+            #scroll-top-btn {
+                bottom: 85px !important;
+                right: 15px !important;
+            }
         }
 
         /* Tablet range: 481px - 767px */
@@ -1949,7 +1954,9 @@
             nameEl.value = ''; msgEl.value = '';
             renderBlessings();
 
-            window.open(waUrl, '_blank');
+            // To prevent Safari/browsers from blocking the mobile redirect as a pop-up, 
+            // assign it directly to href instead
+            window.location.href = waUrl;
         }
 
         renderBlessings();
@@ -1957,13 +1964,17 @@
         /* ---- SCROLL-TO-TOP visibility ---- */
         (function() {
             const btn = document.getElementById('scroll-top-btn');
-            window.addEventListener('scroll', () => {
-                if (window.scrollY > 300) {
+            function handleScroll() {
+                const scrolled = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
+                if (scrolled > 300) {
                     btn.classList.add('visible');
                 } else {
                     btn.classList.remove('visible');
                 }
-            }, { passive: true });
+            }
+            window.addEventListener('scroll', handleScroll, { passive: true });
+            document.body.addEventListener('scroll', handleScroll, { passive: true });
+            window.addEventListener('touchmove', handleScroll, { passive: true });
         })();
     </script>
 </body>
