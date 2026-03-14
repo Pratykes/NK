@@ -1733,7 +1733,7 @@
             <input type="text" id="blessing-name" placeholder="Your Name" maxlength="40">
             <textarea id="blessing-msg" rows="3" placeholder="Write your heartfelt wishes..."
                 maxlength="200"></textarea>
-            <button onclick="submitBlessing()">Send Blessings 💛</button>
+            <a href="#" id="wa-submit-link" target="_blank" style="text-decoration:none; text-align:center; padding: 13px; background: var(--velvet); color: white; border: none; border-radius: 30px; font-family: 'Cinzel'; font-size: 0.85rem; letter-spacing: 2px; cursor: pointer; transition: background 0.3s, transform 0.2s; display: inline-block;">Send Blessings 💛</a>
         </div>
         <div class="blessings-wall" id="blessings-wall"></div>
     </section>
@@ -1940,25 +1940,54 @@
             });
         }
 
-        function submitBlessing() {
-            const nameEl = document.getElementById('blessing-name');
-            const msgEl = document.getElementById('blessing-msg');
-            const name = nameEl.value.trim();
-            const msg = msgEl.value.trim();
-            if (!name || !msg) { alert('Please enter your name and a message 💛'); return; }
+        // On iOS Safari, redirects triggered by JavaScript (window.open, location.href) 
+        // are often blocked as popups. The most reliable method is to have a real <a> tag.
+        // We listen to the input fields and update the <a> tag's href dynamically.
+        const waLinkElement = document.getElementById('wa-submit-link');
+        const nameInput = document.getElementById('blessing-name');
+        const msgInput = document.getElementById('blessing-msg');
 
-            // To maximize compatibility with aggressive mobile browser blockers
-            // like Safari, we use the specific API scheme instead of the shortlink.
-            const waText = encodeURIComponent(`💌 Blessing from ${name}:\n\n${msg}\n\n— Sent via Pratyush & Nikita's Wedding Invitation 🌸`);
-            const waUrl = `https://api.whatsapp.com/send?phone=918209094155&text=${waText}`;
-
-            sessionBlessings.push({ name, msg });
-            nameEl.value = ''; msgEl.value = '';
-            renderBlessings();
-
-            window.location.href = waUrl;
+        function updateWhatsAppLink() {
+            const name = nameInput.value.trim();
+            const msg = msgInput.value.trim();
+            if (name && msg) {
+                const waText = encodeURIComponent(`💌 Blessing from ${name}:\n\n${msg}\n\n— Sent via Pratyush & Nikita's Wedding Invitation 🌸`);
+                waLinkElement.href = `https://wa.me/918209094155?text=${waText}`;
+                waLinkElement.style.pointerEvents = 'auto';
+                waLinkElement.style.opacity = '1';
+            } else {
+                waLinkElement.removeAttribute('href');
+                waLinkElement.style.pointerEvents = 'none';
+                waLinkElement.style.opacity = '0.5';
+            }
         }
 
+        nameInput.addEventListener('input', updateWhatsAppLink);
+        msgInput.addEventListener('input', updateWhatsAppLink);
+
+        waLinkElement.addEventListener('click', function (e) {
+            const name = nameInput.value.trim();
+            const msg = msgInput.value.trim();
+            if (!name || !msg) {
+                e.preventDefault();
+                alert('Please enter your name and a message 💛');
+                return;
+            }
+            
+            // Add to the local "wall"
+            sessionBlessings.push({ name, msg });
+            
+            // Clear fields so it's ready for next time
+            setTimeout(() => {
+                nameInput.value = ''; 
+                msgInput.value = '';
+                updateWhatsAppLink();
+                renderBlessings();
+            }, 500);
+        });
+
+        // Initialize empty state
+        updateWhatsAppLink();
         renderBlessings();
 
         /* ---- SCROLL-TO-TOP visibility ---- */
