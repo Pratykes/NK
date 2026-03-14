@@ -1954,9 +1954,17 @@
             nameEl.value = ''; msgEl.value = '';
             renderBlessings();
 
-            // To prevent Safari/browsers from blocking the mobile redirect as a pop-up, 
-            // assign it directly to href instead
-            window.location.href = waUrl;
+            // Mobile devices (especially Safari on iOS) strictly block redirects that
+            // aren't tied directly to an anchor click event triggered by the user.
+            // Dynamically creating an <a> tag and clicking it is the most reliable way 
+            // to bypass the popup blocker and trigger the app deep-link.
+            const a = document.createElement('a');
+            a.href = waUrl;
+            a.target = '_blank';
+            a.rel = 'noopener noreferrer';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
         }
 
         renderBlessings();
