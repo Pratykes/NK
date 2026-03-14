@@ -1947,24 +1947,16 @@
             const msg = msgEl.value.trim();
             if (!name || !msg) { alert('Please enter your name and a message 💛'); return; }
 
+            // To maximize compatibility with aggressive mobile browser blockers
+            // like Safari, we use the specific API scheme instead of the shortlink.
             const waText = encodeURIComponent(`💌 Blessing from ${name}:\n\n${msg}\n\n— Sent via Pratyush & Nikita's Wedding Invitation 🌸`);
-            const waUrl = `https://wa.me/918209094155?text=${waText}`;
+            const waUrl = `https://api.whatsapp.com/send?phone=918209094155&text=${waText}`;
 
             sessionBlessings.push({ name, msg });
             nameEl.value = ''; msgEl.value = '';
             renderBlessings();
 
-            // Mobile devices (especially Safari on iOS) strictly block redirects that
-            // aren't tied directly to an anchor click event triggered by the user.
-            // Dynamically creating an <a> tag and clicking it is the most reliable way 
-            // to bypass the popup blocker and trigger the app deep-link.
-            const a = document.createElement('a');
-            a.href = waUrl;
-            a.target = '_blank';
-            a.rel = 'noopener noreferrer';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
+            window.location.href = waUrl;
         }
 
         renderBlessings();
